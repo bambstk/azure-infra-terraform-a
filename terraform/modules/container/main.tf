@@ -20,25 +20,25 @@ terraform {
 #
 # Documentation : https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_group
 
-# resource "azurerm_container_group" "aci" {
-#   name                = ???
-#   resource_group_name = ???
-#   location            = ???
-#   ip_address_type     = ???
-#   dns_name_label      = ???
-#   os_type             = ???
-#
-#   container {
-#     name   = "nginx"
-#     image  = ???
-#     cpu    = ???
-#     memory = ???
-#
-#     ports {
-#       port     = ???
-#       protocol = "TCP"
-#     }
-#   }
-#
-#   tags = ???
-# }
+resource "azurerm_container_group" "aci" {
+  name                = "aci-${var.owner}-tf-dvlp"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  ip_address_type     = "Public"
+  dns_name_label      = "aci-${var.owner}-tf"
+  os_type             = "Linux"
+
+  container {
+    name   = "nginx"
+    image  = "nginx:latest"
+    cpu    = "0.5"
+    memory = "0.5"
+
+    ports {
+      port     = "80"
+      protocol = "TCP"
+    }
+  }
+
+  tags = var.tags
+}
