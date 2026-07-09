@@ -16,3 +16,5 @@ jobs:
 
       - name: terraform plan
         uses: dflook/terraform-plan@v2
+        with:
+          path: ../../terraform/main.tf
