@@ -8,17 +8,7 @@ terraform {
   }
 }
 
-# TODO : créer un azurerm_container_group (ACI)
-#
-# Nom attendu      : "aci-${var.owner}-tf"
-# Image            : "nginx:latest"
-# IP               : Public
-# DNS label        : "aci-${var.owner}-tf"
-# CPU / Mémoire    : 0.5 / 0.5
-# Port             : 80 TCP
-# OS               : Linux
-#
-# Documentation : https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_group
+# créer un azurerm_container_group (ACI)
 
 resource "azurerm_container_group" "aci" {
   name                = "aci-${var.owner}-tf-dvlp"
@@ -30,7 +20,7 @@ resource "azurerm_container_group" "aci" {
 
   container {
     name   = "nginx"
-    image  = "nginx:latest"
+    image  = "nginx:1.25"
     cpu    = "0.5"
     memory = "0.5"
 
