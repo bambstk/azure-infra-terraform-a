@@ -14,7 +14,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: terraform plan
-        uses: dflook/terraform-plan@v2
-        with:
-          path: ./terraform
+      - name: Terraforme
+        uses: hashicorp/setup-terraform@v4
+      - run: Terraform init
+      # - run: terraform init -backend-config="ressource_group=lzniberRG" -backend-config="storage_account_name=ststate8dvlp" -backend-config="container_name=tfstate" -backend-config="key=leith.terraform.tfstate"  
+      - run: terraform plan 
