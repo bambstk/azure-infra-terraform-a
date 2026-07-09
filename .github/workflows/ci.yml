@@ -11,11 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v4
 
-      - name: Terraforme
-        uses: hashicorp/setup-terraform@v4
-      - run: Terraform init
-      # - run: terraform init -backend-config="ressource_group=lzniberRG" -backend-config="storage_account_name=ststate8dvlp" -backend-config="container_name=tfstate" -backend-config="key=leith.terraform.tfstate"  
-      - run: terraform plan 
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init -input=false
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -no-color -input=false
+      continue-on-error: true
+
