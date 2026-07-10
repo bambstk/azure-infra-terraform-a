@@ -5,13 +5,17 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 jobs:
-  build:
+  Planifier:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
 
     steps:
     - uses: actions/checkout@v7
@@ -25,20 +29,54 @@ jobs:
 
     - name: Terraform fmt
       id: fmt
-      run: cd terraform/ && terraform fmt -check
+      run: terraform fmt -check
 
     - name: Terraform Init
       id: init
-      run: cd terraform/ && terraform init 
+      run: terraform init 
 
     - name: Terraform Validate
       id: validate
-      run: cd terraform/ && terraform validate -no-color
+      run: terraform validate -no-color
 
     - name: Terraform Plan
       id: plan
-      run: cd terraform/ && terraform plan -no-color -input=false -detailed-exitcode
+      run: |
+        terraform plan -no-color -input=false -detailed-exitcode
+        exit_code=$?
+        if [ $exit_code -eq 2 ]; then
+          echo "Changement de plan !! Cependant ok, pas erreur"
+        elif [ $exit_code -ne 0 ]; then
+          echo "erreur !!! erreur !!!! code de sortie $exit_code !!!!!"
+          exit $exit_code
+        fi
+    
+  Appliquer:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: Planifier
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+    - uses: actions/checkout@v7
+    - uses: hashicorp/setup-terraform@v4
+    - name: Azure login
+      uses: azure/login@v3
+      with:
+        client-id: 7f95b0e5-50c1-4c21-b58c-4fb245bacffd
+        tenant-id: a2e466aa-4f86-4545-b5b8-97da7c8febf3
+        subscription-id: 5e683e0f-b00c-48d6-9769-5aaf598de8f1
+    - name: Terraform Init
+      id: init
+      run: terraform init
+    - name: Terraform Plan
+      run: terraform plan -no-color
       continue-on-error: true
 
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
+
     - name: Terraform Apply
-      run: cd terraform/ && terraform apply -auto-approve
+      run: terraform apply -auto-approve

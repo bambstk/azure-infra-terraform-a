@@ -6,7 +6,7 @@ le init marchait pas alors j'ai ajouté -backend=false pour skip la configurtion
 
 mais en fait mauvais bail pcq ça empeche le terraform plan de se lancer......
 il suffit d'enlever le fichier backend.tf pour que ça marche sans encombre en fait (on le remettra plus tard si on en a besoin) 
-(y avais aucun backend dans leur tuto)
+(y avais aucun backend dans [leur tuto](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build#initialize-your-terraform-configuration))
 
 je l'ai remis plus tard pour pas avoir besoin de mettre 1Milliard d'argument sur le init mais il faut avoir fini le 6.2 pour que ça marche (créé le storage account et container ```az storage container create```)
 
@@ -29,7 +29,7 @@ $AppId = (az ad app list --display-name "github-actions-terraform-buambinho" --q
 az ad app federated-credential list --id $AppId --query "[].{Nom:name, Subject:subject}" --output table
 ```
 
-sur powershell pour ajouter les authorisation sur l'app et son service principal il faut changer quelques trucs :
+sur powershell pour ajouter les authorisation sur l'app et son service principal il faut changer quelques trucs (là aussi je l'ai dejà fait, donc je le laisse juste pour l'historique 🙏):
 ```
 $AppId --parameters @'
 >> {    \"name\": \"github-azure-infra-terraform-a\", \"issuer\": \"https://token.actions.githubusercontent.com\", \"subject\": \"repo:bambstk/azure-infra-terraform-a:ref:refs/heads/main\",     \"audiences\": [\"api://AzureADTokenExchange\"]}
@@ -37,5 +37,5 @@ $AppId --parameters @'
 ```
 et apparement pour la demande de poul c'est ça le texte : ```repo:bambstk/azure-infra-terraform-a:pull_request```
 
-puis faut mettre l'app qui a le sp en contributor sur le RG (et pas oublier les permissions sur le yml de la gitlab ci) :  
+puis faut mettre l'app qui a le sp en contributor sur le RG (et pas oublier les permissions sur le yml de la gitlab ci(j'avais oublié....)) :  
 ``` az role assignment create --assignee 5538bd7b-b556-49dc-94a3-0442fbff0208 --role Contributor --scope /subscriptions/5e683e0f-b00c-48d6-9769-5aaf598de8f1/resourceGroups/lzniberRG```
