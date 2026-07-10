@@ -39,6 +39,9 @@ jobs:
       id: plan
       run: cd terraform/ && terraform plan -no-color -input=false -detailed-exitcode
       continue-on-error: true
+    
+    - name: Terraform Destroy
+      run: cd terraform/ && terraform destroy -auto-approve
 
     - name: Terraform Apply
       run: cd terraform/ && terraform apply -auto-approve
