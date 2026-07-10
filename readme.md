@@ -25,3 +25,11 @@ mais je l'ai déjà fait donc :
 $AppId = (az ad app list --display-name "github-actions-terraform-buambinho" --query "[0].appId" -o tsv)
 az ad app federated-credential list --id $AppId --query "[].{Nom:name, Subject:subject}" --output table
 ```
+
+sur powershell pour ajouter les authorisation sur l'app et son service principal il faut changer quelques trucs :
+```
+$AppId --parameters @'
+>> {    \"name\": \"github-azure-infra-terraform-a\", \"issuer\": \"https://token.actions.githubusercontent.com\", \"subject\": \"repo:bambstk/azure-infra-terraform-a:ref:refs/heads/main\",     \"audiences\": [\"api://AzureADTokenExchange\"]}
+>> '@
+```
+et apparement pour la demande de poul c'est ça le texte : ```repo:bambstk/azure-infra-terraform-a:pull_request```
