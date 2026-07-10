@@ -29,7 +29,7 @@ jobs:
 
     - name: Terraform Init
       id: init
-      run: cd terraform/ && terraform init -backend-config="ressource_group=lzniberRG" -backend-config="storage_account_name=ststate8dvlp" -backend-config="container_name=tfstate" -backend-config="key=leith.terraform.tfstate"
+      run: cd terraform/ && terraform init 
 
     - name: Terraform Validate
       id: validate
@@ -41,4 +41,4 @@ jobs:
       continue-on-error: true
 
     - name: Terraform Apply
-      run: cd terraform/ && terraform apply
+      run: cd terraform/ && terraform apply -auto-approve
