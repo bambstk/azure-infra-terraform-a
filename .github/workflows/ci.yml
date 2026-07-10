@@ -29,7 +29,7 @@ jobs:
 
     - name: Terraform Init
       id: init
-      run: cd terraform/ && terraform init -input=false
+      run: cd terraform/ && terraform init -backend-config="ressource_group=lzniberRG" -backend-config="storage_account_name=ststate8dvlp" -backend-config="container_name=tfstate" -backend-config="key=leith.terraform.tfstate"
 
     - name: Terraform Validate
       id: validate
@@ -37,6 +37,8 @@ jobs:
 
     - name: Terraform Plan
       id: plan
-      run: cd terraform/ && terraform plan -no-color -input=false
+      run: cd terraform/ && terraform plan -no-color -input=false -detailed-exitcode
       continue-on-error: true
 
+    - name: Terraform Apply
+      run: cd terraform/ && terraform apply
