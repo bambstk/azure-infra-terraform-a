@@ -5,12 +5,13 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 jobs:
-  build:
+  Planifier:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,6 +51,30 @@ jobs:
           exit $exit_code
         fi
     
+  Appliquer:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: Planifier
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+    - uses: actions/checkout@v7
+    - uses: hashicorp/setup-terraform@v4
+    - name: Azure login
+      uses: azure/login@v3
+      with:
+        client-id: 7f95b0e5-50c1-4c21-b58c-4fb245bacffd
+        tenant-id: a2e466aa-4f86-4545-b5b8-97da7c8febf3
+        subscription-id: 5e683e0f-b00c-48d6-9769-5aaf598de8f1
+    - name: Terraform Init
+      id: init
+      run: terraform init
+    - name: Terraform Plan
+      run: terraform plan -no-color
+      continue-on-error: true
+
     - name: Terraform Destroy
       run: terraform destroy -auto-approve
 
