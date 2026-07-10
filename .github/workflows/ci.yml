@@ -16,7 +16,7 @@ jobs:
 
     - name: bouger dans la config
       id: idk
-      run: cd terraform
+      run: ls -al && cd terraform/ && ls -al
     - name: Terraform fmt
       id: fmt
       run: terraform fmt -check
