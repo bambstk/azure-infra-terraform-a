@@ -42,7 +42,7 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: |
-        terraform plan -no-color -input=false -detailed-exitcode
+        terraform plan -no-color -input=false -detailed-exitcode -out=tfplan
         exit_code=$?
         if [ $exit_code -eq 2 ]; then
           echo "Changement de plan !! Cependant ok, pas erreur"
@@ -50,33 +50,8 @@ jobs:
           echo "erreur !!! erreur !!!! code de sortie $exit_code !!!!!"
           exit $exit_code
         fi
-    
-  Appliquer:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-    needs: Planifier
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: terraform
-
-    steps:
-    - uses: actions/checkout@v7
-    - uses: hashicorp/setup-terraform@v4
-    - name: Azure login
-      uses: azure/login@v3
+    - name: Upload Plan Artifact
+      uses: actions/upload-artifact@v7
       with:
-        client-id: ${{ vars.CLIENT_ID }}
-        tenant-id: ${{ vars.TENANT_ID }}
-        subscription-id: ${{ vars.SUBSCRIPTION_ID }}
-    - name: Terraform Init
-      id: init
-      run: terraform init
-    - name: Terraform Plan
-      run: terraform plan -no-color
-      continue-on-error: true
-
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
-
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
+        name: tfplan
+        path: terraform/tfplan
