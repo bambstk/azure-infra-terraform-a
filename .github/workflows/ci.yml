@@ -50,8 +50,3 @@ jobs:
           echo "erreur !!! erreur !!!! code de sortie $exit_code !!!!!"
           exit $exit_code
         fi
-    - name: Upload Plan Artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: tfplan
-        path: terraform/tfplan
