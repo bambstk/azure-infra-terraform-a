@@ -11,6 +11,10 @@ on:
           - apply
           - destroy
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
