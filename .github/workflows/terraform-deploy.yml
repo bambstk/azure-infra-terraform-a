@@ -14,6 +14,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  actions: read
 
 jobs:
   deploy:
@@ -33,14 +34,25 @@ jobs:
           tenant-id: ${{ vars.TENANT_ID }}
           subscription-id: ${{ vars.SUBSCRIPTION_ID }}
 
-      - name: Terraform Init
-        run: terraform init
+      - name: Get latest CI run ID
+        id: get-run
+        run: |
+            RUN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/runs?status=success&branch=main&per_page=1" \
+            | jq -r '.workflow_runs[0].id')
+            echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Download Plan Artifact
         uses: actions/download-artifact@v7
         with:
             name: tfplan
             path: terraform
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            repository: ${{ github.repository }}
+            run-id: ${{ steps.get-run.outputs.run_id }}
+    
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Apply
         if: inputs.action == 'apply'
