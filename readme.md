@@ -39,3 +39,17 @@ et apparement pour la demande de poul c'est ça le texte : ```repo:bambstk/azure
 
 puis faut mettre l'app qui a le sp en contributor sur le RG (et pas oublier les permissions sur le yml de la gitlab ci(j'avais oublié....)) :  
 ``` az role assignment create --assignee 5538bd7b-b556-49dc-94a3-0442fbff0208 --role Contributor --scope /subscriptions/5e683e0f-b00c-48d6-9769-5aaf598de8f1/resourceGroups/lzniberRG```
+
+bon en gros y a tflint  installé, et le précommit faut créer le fichier pre-commit dans .git/hooks, et mettre ça dedans :
+
+```
+#!/bin/sh
+
+if cd ./terraform && tflint
+then
+    echo "tflint okidoki pas de probleme tu peux poush"
+else
+    echo "tflint pas content regarde le zin: "
+    tflint
+fi
+```
