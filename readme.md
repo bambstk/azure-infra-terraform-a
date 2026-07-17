@@ -1,55 +1,30 @@
-Salut c'est moi !
+# Super Terraform feat Azure gang 3k
 
-"4 bulldogs, tu sais que j'aurais 4 bulldogs" - Jolagreen23
+## IaC 
 
-le init marchait pas alors j'ai ajouté -backend=false pour skip la configurtion qui existait pas, source ?[tkt bro](https://developer.hashicorp.com/terraform/cli/commands/init#backend-initialization)
+Toute l'infrastructure azure du tp CLI est ici sous forme de code hcl pour que le deploiement et la destruction puisse se faire automatiquement et être répliqué et modifié facilement.
 
-mais en fait mauvais bail pcq ça empeche le terraform plan de se lancer......
-il suffit d'enlever le fichier backend.tf pour que ça marche sans encombre en fait (on le remettra plus tard si on en a besoin) 
-(y avais aucun backend dans [leur tuto](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build#initialize-your-terraform-configuration))
+## étapes
 
-je l'ai remis plus tard pour pas avoir besoin de mettre 1Milliard d'argument sur le init mais il faut avoir fini le 6.2 pour que ça marche (créé le storage account et container ```az storage container create```)
+### initialisation
 
-dna sletape 6.2 c'est normal que la commande n'affiche rien apparement
-mais celle là affiche ce qu'il faut :  
-```az storage container list --account-name ststate8dvlp --auth-mode login --output table```
+```terraform init``` pour init, le state est stocké dans un storage azure, tous les paramettres sont dans le backend.tf
 
+### planification
 
-pour l'étape 8 il faut tout créer : 
+```terraform fmt``` pour check le format et ```terraform validate``` pour valider la syntaxe de base.  
+On peut lancer un ```tflint``` pour être sûr sûr aussi après.  
+```terraform plan``` pour voir les changements si il y en a et les appliquer dans le state
 
-```
-az ad app create --display-name "github-actions-terraform-buambinho"
-$AppId = (az ad app list --display-name "github-actions-terraform-buambinho" --query "[0].appId" -o tsv)
-az ad sp create --id $AppId
-```
+### appliquer
 
-mais je l'ai déjà fait donc :
-```
-$AppId = (az ad app list --display-name "github-actions-terraform-buambinho" --query "[0].appId" -o tsv)
-az ad app federated-credential list --id $AppId --query "[].{Nom:name, Subject:subject}" --output table
-```
+```terraform apply``` pour appliquer les changement du ```plan``` (donc créer les ressources azure)
 
-sur powershell pour ajouter les authorisation sur l'app et son service principal il faut changer quelques trucs (là aussi je l'ai dejà fait, donc je le laisse juste pour l'historique 🙏):
-```
-$AppId --parameters @'
->> {    \"name\": \"github-azure-infra-terraform-a\", \"issuer\": \"https://token.actions.githubusercontent.com\", \"subject\": \"repo:bambstk/azure-infra-terraform-a:ref:refs/heads/main\",     \"audiences\": [\"api://AzureADTokenExchange\"]}
->> '@
-```
-et apparement pour la demande de poul c'est ça le texte : ```repo:bambstk/azure-infra-terraform-a:pull_request```
+### détruire
 
-puis faut mettre l'app qui a le sp en contributor sur le RG (et pas oublier les permissions sur le yml de la gitlab ci(j'avais oublié....)) :  
-``` az role assignment create --assignee 5538bd7b-b556-49dc-94a3-0442fbff0208 --role Contributor --scope /subscriptions/5e683e0f-b00c-48d6-9769-5aaf598de8f1/resourceGroups/lzniberRG```
+```terraform destroy``` pour détruire toutes les ressources crées avec le tag ```managed_by : terraform``` de manière automatique
 
-bon en gros y a tflint  installé, et le précommit faut créer le fichier pre-commit dans .git/hooks, et mettre ça dedans :
+## CI avec github action
 
-```
-#!/bin/sh
-
-if cd ./terraform && tflint
-then
-    echo "tflint okidoki pas de probleme tu peux poush"
-else
-    echo "tflint pas content regarde le zin: "
-    tflint
-fi
-```
+Avec le workflow ci.yml du repo les étapes du ```init``` jusqu'au ```plan``` sont réalisées automatiquement à chaque pull request (nécessite la connection à azure, fait ici en OIDC grace à une app d'entreprise et un service principal entra ID).  
+Et une fois le merge fait sur main on peut ```apply``` ou ```destroy``` en lançant le workflow terraform-deploy.yml manuellement en fonction des résultats du plan et de ce que l'on veut faire.
