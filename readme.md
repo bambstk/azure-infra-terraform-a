@@ -28,3 +28,7 @@ On peut lancer un ```tflint``` pour être sûr sûr aussi après.
 
 Avec le workflow ci.yml du repo les étapes du ```init``` jusqu'au ```plan``` sont réalisées automatiquement à chaque pull request (nécessite la connection à azure, fait ici en OIDC grace à une app d'entreprise et un service principal entra ID).  
 Et une fois le merge fait sur main on peut ```apply``` ou ```destroy``` en lançant le workflow terraform-deploy.yml manuellement en fonction des résultats du plan et de ce que l'on veut faire.
+
+## hook pre-commit
+
+on a aussi ajouté un hook pre commit dans .git/hooks qui lance un ```tflint``` avant chaque commit en local, pour être sûr qu'on commit pas quelque chose de cassé.
