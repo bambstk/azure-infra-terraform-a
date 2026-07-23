@@ -53,3 +53,90 @@ else
     tflint
 fi
 ```
+
+## partie observabilité
+
+à la fin de l'étape 2 de la partie observabilté (tous les copier coller) le ```terraform fmt``` pointers main.tf, mais bref peu importe, surtout le ```terraform validate``` me réponds ça :  
+```
+╷
+│ Error: Unsupported attribute
+│
+│   on main.tf line 107, in module "observability":
+│  107:   storage_account_id = module.storage.storage_account_id
+│     ├────────────────
+│     │ module.storage is object with 1 attribute "storage_account_name"
+│
+│ This object does not have an attribute named "storage_account_id".
+╵
+╷
+│ Error: Reference to undeclared input variable
+│
+│   on modules\app-service\main.tf line 28, in resource "azurerm_linux_web_app" "app":
+│   28:   app_settings = merge(var.app_settings, {
+│
+│ An input variable with the name "app_settings" has not been declared. This variable can be declared with a variable
+│ "app_settings" {} block.
+╵
+╷
+│ Error: Reference to undeclared input variable
+│
+│   on modules\function-app\main.tf line 41, in resource "azurerm_linux_function_app" "fn":
+│   41:   app_settings = merge(var.app_settings, {
+│
+│ An input variable with the name "app_settings" has not been declared. This variable can be declared with a variable
+│ "app_settings" {} block.
+╵
+╷
+│ Error: Invalid resource type
+│
+│   on modules\observability\main.tf line 78, in resource "azurerm_application_insights_standard_availability_test" "app_health":
+│   78: resource "azurerm_application_insights_standard_availability_test" "app_health" {
+│
+│ The provider hashicorp/azurerm does not support resource type
+│ "azurerm_application_insights_standard_availability_test".
+╵
+╷
+│ Error: Invalid resource type
+│
+│   on modules\observability\main.tf line 97, in resource "azurerm_application_insights_standard_availability_test" "func_health":
+│   97: resource "azurerm_application_insights_standard_availability_test" "func_health" {
+│
+│ The provider hashicorp/azurerm does not support resource type
+│ "azurerm_application_insights_standard_availability_test".
+╵
+```
+
+oui bon en gros, il fallait juste que j'ajoute  
+cet output dans le storage:  
+```
+output "storage_account_id" {
+  value = azurerm_storage_account.sa.id
+}
+```
+cette variable dans l'app et la func:  
+```
+variable "app_settings" {
+  description = "Application settings"
+  type        = map(string)
+  default     = {}
+}
+```  
+la description est optionnelle imo  
+que je remplace ```azurerm_application_insights_standard_availability_test``` par ```azurerm_application_insights_standard_web_test``` dans le main de observability qui était une ancienne syntaxe, et enfin  
+que j'ajoute ces outputs dans app-service et function-app respectivement:  
+```
+output "app_service_id" {
+  value = azurerm_linux_web_app.app.id
+}
+```  
+```
+output "function_app_id" {
+  value = azurerm_linux_function_app.fn.id
+}
+```
+là j'ai utilisé le petit deepseek, mais une liste de ressource qui peut aider c'est :  
+https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nom_de_la_ressource  
+check les changelog  
+https://developer.hashicorp.com/terraform/language/values/variables  
+https://developer.hashicorp.com/terraform/language/values/outputs  
+```terraform providers schema -json | jq > schema.json```  

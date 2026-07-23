@@ -7,3 +7,8 @@ variable "app_insights_connection_string" {
   type      = string
   sensitive = true
 }
+variable "app_settings" {
+  description = "Application settings"
+  type        = map(string)
+  default     = {}
+}

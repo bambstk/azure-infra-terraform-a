@@ -75,7 +75,7 @@ resource "azurerm_monitor_diagnostic_setting" "store_blob" {
 
 # test de disponibilité selon les regions en gros
 
-resource "azurerm_application_insights_standard_availability_test" "app_health" {
+resource "azurerm_application_insights_standard_web_test" "app_health" {
   name                    = "avail-app-${var.owner}-dvlp"
   resource_group_name     = var.resource_group_name
   location                = var.location
@@ -94,7 +94,7 @@ resource "azurerm_application_insights_standard_availability_test" "app_health" 
   }
 }
 
-resource "azurerm_application_insights_standard_availability_test" "func_health" {
+resource "azurerm_application_insights_standard_web_test" "func_health" {
   name                    = "avail-func-${var.owner}-dvlp"
   resource_group_name     = var.resource_group_name
   location                = var.location
@@ -105,7 +105,7 @@ resource "azurerm_application_insights_standard_availability_test" "func_health"
   tags                    = var.tags
 
   request {
-    url = "${var.func_service_url}/api/health"
+    url = "${var.function_app_url}/api/health"
   }
 
   validation_rules {
@@ -117,7 +117,7 @@ resource "azurerm_monitor_metric_alert" "app_availability" {
   name                = "alert-avail-app-${var.owner}"
   resource_group_name = var.resource_group_name
   scopes              = [
-    azurerm_application_insights_standard_availability_test.app_health.id,
+    azurerm_application_insights_standard_web_test.app_health.id,
     azurerm_application_insights.app.id
   ]
   severity    = 0        # Critical
@@ -125,7 +125,7 @@ resource "azurerm_monitor_metric_alert" "app_availability" {
   window_size = "PT5M"
 
   application_insights_web_test_location_availability_criteria {
-    web_test_id           = azurerm_application_insights_standard_availability_test.app_health.id
+    web_test_id           = azurerm_application_insights_standard_web_test.app_health.id
     component_id          = azurerm_application_insights.app.id
     failed_location_count = 2   # alerte si 2 régions sur 3 échouent
   }
