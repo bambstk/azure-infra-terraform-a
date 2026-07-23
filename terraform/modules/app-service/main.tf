@@ -22,7 +22,13 @@ resource "azurerm_linux_web_app" "app" {
     application_stack {
       python_version = "3.11"
     }
+    health_check_path                 = "/health"        # route Flask existante
+    health_check_eviction_time_in_min = 10
   }
+  app_settings = merge(var.app_settings, {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING"      = var.app_insights_connection_string
+      "ApplicationInsightsAgent_EXTENSION_VERSION" = "~3"
+    })
 
   tags = var.tags
 }

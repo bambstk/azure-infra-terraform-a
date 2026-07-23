@@ -21,15 +21,7 @@ resource "azurerm_storage_account" "fn_storage" {
   tags                     = var.tags
 }
 
-# TODO (2/2) : créer un azurerm_linux_function_app
-#
-# Nom attendu    : "fn-${var.owner}-tf"
-# Plan           : var.service_plan_id
-# Storage        : azurerm_storage_account.fn_storage.name + primary_access_key
-# HTTPS only     : true
-# Runtime        : Python 3.11
-#
-# Documentation : https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app
+# créer un azurerm_linux_function_app
 
 resource "azurerm_linux_function_app" "fn" {
   name                       = "fn-${var.owner}-tf-dvlp"
@@ -43,7 +35,12 @@ resource "azurerm_linux_function_app" "fn" {
     application_stack {
       python_version = "3.11"
     }
+    health_check_path                 = "/api/http_trigger"   # la Function App n'a pas /health
+    health_check_eviction_time_in_min = 10
   }
+  app_settings = merge(var.app_settings, {
+      "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_connection_string
+    })
 
   tags = var.tags
 }

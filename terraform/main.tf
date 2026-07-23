@@ -47,25 +47,25 @@ module "storage" {
 # ── App Service (Étape 3) ─────────────────────────────────────────────────────
 
 module "app_service" {
-  source = "./modules/app-service"
-
-  owner               = var.owner
-  resource_group_name = data.azurerm_resource_group.rg.name
-  service_plan_id     = data.azurerm_service_plan.shared.id
-  location            = var.location
-  tags                = local.tags
+  source                         = "./modules/app-service"
+  app_insights_connection_string = module.observability.app_insights_connection_string
+  owner                          = var.owner
+  resource_group_name            = data.azurerm_resource_group.rg.name
+  service_plan_id                = data.azurerm_service_plan.shared.id
+  location                       = var.location
+  tags                           = local.tags
 }
 
 # ── Function App (Étape 3) ────────────────────────────────────────────────────
 
 module "function_app" {
-  source = "./modules/function-app"
-
-  owner               = var.owner
-  resource_group_name = data.azurerm_resource_group.rg.name
-  location            = var.location
-  service_plan_id     = data.azurerm_service_plan.shared.id
-  tags                = local.tags
+  source                         = "./modules/function-app"
+  app_insights_connection_string = module.observability.func_insights_connection_string
+  owner                          = var.owner
+  resource_group_name            = data.azurerm_resource_group.rg.name
+  location                       = var.location
+  service_plan_id                = data.azurerm_service_plan.shared.id
+  tags                           = local.tags
 }
 
 # ── Container Instance (Étape 3) ──────────────────────────────────────────────
@@ -89,4 +89,25 @@ module "network" {
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = var.location
   tags                = local.tags
+}
+
+# ── Observabilité (Étape tp-observabilité) ─────────────────────────────────────────────────────────
+# appeler le module "./modules/observability"
+
+module "observability" {
+  source = "./modules/observability"
+
+  owner               = var.owner
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  tags                = local.tags
+
+  app_service_id     = module.app_service.app_service_id
+  function_app_id    = module.function_app.function_app_id
+  storage_account_id = module.storage.storage_account_id
+
+  app_service_url  = "https://${module.app_service.default_hostname}"
+  function_app_url = "https://${module.function_app.default_hostname}"
+
+  alert_email = "ton.email@example.com"
 }
